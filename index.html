@@ -252,12 +252,12 @@
             background-position: center;
         }
         .modern-preview {
-            background-image: url('https://images.pexels.com/photos/590037/pexels-photo-590037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+            background-image: url('https://images.pexels.com/photos/8867465/pexels-photo-8867465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
             background-size: cover;
             background-position: center;
         }
         .creative-preview {
-            background-image: url('https://images.pexels.com/photos/3747462/pexels-photo-3747462.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+            background-image: url('https://images.pexels.com/photos/8867392/pexels-photo-8867392.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
             background-size: cover;
             background-position: center;
         }
@@ -433,7 +433,7 @@
             font-size: 12px;
         }
         
-        /* Creative Template - Simplified design */
+         /* Creative Template - Simplified design */
         .creative .resume-page {
             font-family: 'Helvetica', sans-serif;
             color: #333;
@@ -1256,6 +1256,8 @@
             const projects = JSON.parse(localStorage.getItem(SECTIONS.projects.key) || '[]');
 
             function addText(text, x, y, options = {}) {
+                if (!text || typeof text !== 'string') return 0;
+                
                 const font = options.font || 'helvetica';
                 const style = options.style || 'normal';
                 const size = options.fontSize || 12;
@@ -1269,16 +1271,21 @@
                     doc.setTextColor(options.fillColor[0], options.fillColor[1], options.fillColor[2]);
                 }
                 
-                doc.text(text, x, y, { 
-                    maxWidth: options.maxWidth || pageWidth - 2 * margin,
-                    align: options.align || 'left'
-                });
+                try {
+                    doc.text(text, x, y, {
+                        maxWidth: options.maxWidth || pageWidth - 2 * margin,
+                        align: options.align || 'left'
+                    });
+                } catch (error) {
+                    console.error('Error adding text:', error);
+                    return 0;
+                }
                 
-                return doc.getTextDimensions(text, { 
-                    fontSize: size, 
+                return doc.getTextDimensions(text, {
+                    fontSize: size,
                     fontStyle: style,
                     fontName: font,
-                    maxWidth: options.maxWidth || pageWidth - 2 * margin 
+                    maxWidth: options.maxWidth || pageWidth - 2 * margin
                 }).h;
             }
 
@@ -1291,249 +1298,23 @@
                 return false;
             }
 
-            // Professional Template
-            if (selectedTemplate === 'professional') {
-    // Balanced spacing configuration
-    const balancedMode = {
-        sectionTitleSize: 15, // Slightly reduced from original
-        sectionTitleSpacing: 10,
-        itemTitleSize: 13, // Slightly reduced
-        bodyTextSize: 11, // Slightly reduced
-        lineSpacing: 10,
-        sectionGap: 12,
-        minSectionHeight: 80 // Minimum height each section should occupy
-    };
-
-    let yOffset = margin;
-    
-    // Header (optimized but not too compact)
-    doc.setFont('times', 'normal');
-    yOffset += addText(personal.name || 'Your Name', pageWidth / 2, yOffset, { 
-        fontSize: 20, // Only slightly reduced from original 22
-        align: 'center',
-        style: 'bold'
-    });
-    yOffset += addText(personal.title || 'Job Title', pageWidth / 2, yOffset, { 
-        fontSize: 16,  
-        align: 'center',
-        style: 'italic'
-    });
-    
-    // Contact info
-    const contacts = [personal.email, personal.phone, personal.address, personal.link1, personal.link2]
-        .filter(Boolean).join(' | ');
-    yOffset += addText(contacts, pageWidth / 2, yOffset, { 
-        fontSize: 11, // Original was 12
-        align: 'center'
-    });
-    
-    yOffset += 10;
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(1.5); // Slightly thinner than original 2
-    doc.line(margin, yOffset, pageWidth - margin, yOffset);
-    yOffset += 15;
-
-    // Summary (with dynamic expansion)
-    if (personal.summary) {
-        const summaryHeight = Math.max(balancedMode.minSectionHeight / 3, 40);
-        checkPageBreak(summaryHeight);
-        
-        yOffset += addText('PROFESSIONAL SUMMARY', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.setLineWidth(1);
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        const summaryLines = doc.splitTextToSize(personal.summary, pageWidth - 2 * margin);
-        // Use more lines if space available
-        const maxLines = Math.floor((pageHeight - yOffset - margin) / (balancedMode.bodyTextSize * 1.5));
-        yOffset += addText(summaryLines.slice(0, maxLines).join(' '), margin, yOffset, { 
-            fontSize: balancedMode.bodyTextSize,
-            maxWidth: pageWidth - 2 * margin
-        });
-        yOffset += balancedMode.sectionGap;
-    }
-
-    // Education (balanced spacing)
-    if (education.length) {
-        checkPageBreak(balancedMode.minSectionHeight);
-        
-        yOffset += addText('EDUCATION', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        education.forEach(edu => {
-            checkPageBreak(35);
-            yOffset += addText(`${edu.degree} - ${edu.institution}`, margin, yOffset, { 
-                fontSize: balancedMode.itemTitleSize,
-                style: 'bold'
-            });
-            const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
-            yOffset += addText(`${edu.startDate} - ${endDate}`, pageWidth - margin, yOffset - balancedMode.itemTitleSize, { 
-                fontSize: balancedMode.bodyTextSize, 
-                style: 'italic',
-                align: 'right'
-            });
-            yOffset += balancedMode.lineSpacing;
-        });
-        yOffset += balancedMode.sectionGap;
-    }
-
-    // Work Experience (dynamic description lines)
-    if (work.length) {
-        checkPageBreak(balancedMode.minSectionHeight);
-        
-        yOffset += addText('WORK EXPERIENCE', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        work.forEach(job => {
-            checkPageBreak(50);
-            yOffset += addText(`${job.position} - ${job.company}`, margin, yOffset, { 
-                fontSize: balancedMode.itemTitleSize,
-                style: 'bold'
-            });
-            yOffset += addText(`${job.startDate} - ${job.endDate}`, pageWidth - margin, yOffset - balancedMode.itemTitleSize, { 
-                fontSize: balancedMode.bodyTextSize, 
-                style: 'italic',
-                align: 'right'
-            });
-            
-            if (job.description) {
-                // Dynamic line count based on available space
-                const linesAvailable = Math.floor((pageHeight - yOffset - margin) / (balancedMode.bodyTextSize * 1.3));
-                const descLines = doc.splitTextToSize(job.description, pageWidth - 2 * margin);
-                yOffset += addText(descLines.slice(0, Math.max(2, linesAvailable)).join(' '), margin, yOffset, { 
-                    fontSize: balancedMode.bodyTextSize
-                });
-            }
-            yOffset += balancedMode.lineSpacing;
-        });
-        yOffset += balancedMode.sectionGap;
-    }
-
-    // Skills (expanded layout)
-    if (skills.length) {
-        checkPageBreak(balancedMode.minSectionHeight / 2);
-        
-        yOffset += addText('SKILLS', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        // Calculate rows needed
-        const skillsPerRow = 4;
-        const skillRows = [];
-        
-        for (let i = 0; i < skills.length; i += skillsPerRow) {
-            skillRows.push(skills.slice(i, i + skillsPerRow));
-        }
-
-        skillRows.forEach(row => {
-            const skillText = row.map(skill => skill.skill).join(' • ');
-            yOffset += addText(skillText, margin, yOffset, {
-                fontSize: balancedMode.bodyTextSize,
-                maxWidth: pageWidth - 2 * margin
-            });
-            yOffset += 8; // Slight spacing between rows
-        });
-        
-        yOffset += balancedMode.sectionGap - 8;
-    }
-
-    // Certifications (standard layout)
-    if (certifications.length) {
-        checkPageBreak(balancedMode.minSectionHeight / 2);
-        
-        yOffset += addText('CERTIFICATIONS', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        certifications.forEach(cert => {
-            checkPageBreak(25);
-            yOffset += addText(`${cert.certification} - ${cert.issuer}`, margin, yOffset, { 
-                fontSize: balancedMode.itemTitleSize,
-                style: 'bold'
-            });
-            yOffset += balancedMode.lineSpacing;
-        });
-        yOffset += balancedMode.sectionGap;
-    }
-
-    // Projects (flexible layout)
-    if (projects.length) {
-        checkPageBreak(balancedMode.minSectionHeight);
-        
-        yOffset += addText('PROJECTS', margin, yOffset, { 
-            fontSize: balancedMode.sectionTitleSize,
-            style: 'bold'
-        });
-        doc.line(margin, yOffset, pageWidth - margin, yOffset);
-        yOffset += balancedMode.sectionTitleSpacing;
-        
-        projects.forEach(proj => {
-            checkPageBreak(40);
-            yOffset += addText(proj.projectName, margin, yOffset, { 
-                fontSize: balancedMode.itemTitleSize,
-                style: 'bold'
-            });
-            if (proj.projectLink) {
-                yOffset += addText(proj.projectLink, margin, yOffset, { 
-                    fontSize: balancedMode.bodyTextSize,
-                    style: 'italic'
-                });
-                yOffset += 6;
-            }
-            if (proj.projectDescription) {
-                // Use more lines if space available
-                const linesAvailable = Math.floor((pageHeight - yOffset - margin) / (balancedMode.bodyTextSize * 1.3));
-                const descLines = doc.splitTextToSize(proj.projectDescription, pageWidth - 2 * margin);
-                yOffset += addText(descLines.slice(0, Math.max(2, linesAvailable)).join(' '), margin, yOffset, { 
-                    fontSize: balancedMode.bodyTextSize
-                });
-            }
-            yOffset += balancedMode.lineSpacing;
-        });
-    }
-
-    // Final check - add filler if needed
-    if (yOffset < pageHeight - 50) {
-        // Add subtle vertical spacing to fill page
-        const remainingSpace = pageHeight - yOffset - margin;
-        yOffset += addText('', margin, yOffset + remainingSpace/2, {
-            fontSize: 1
-        });
-    }
-}
-            // Modern Template
-            else if (selectedTemplate === 'modern') {
-                doc.setFont('helvetica', 'normal');
+           // Professional Template
+           if (selectedTemplate === 'professional') {
+                doc.setFont('times', 'normal');
                 
                 // Header
                 yOffset += addText(personal.name || 'Your Name', pageWidth / 2, yOffset, { 
-                    fontSize: 20, 
+                    fontSize: 22, 
                     align: 'center',
                     style: 'bold'
                 });
+                yOffset += 4;
                 yOffset += addText(personal.title || 'Job Title', pageWidth / 2, yOffset, { 
-                    fontSize: 14, 
+                    fontSize: 16, 
                     align: 'center',
-                    color: [102, 102, 102]
+                    style: 'italic'
                 });
-                
+                yOffset += 4;
                 const contacts = [personal.email, personal.phone, personal.address, personal.link1, personal.link2]
                     .filter(Boolean).join(' | ');
                 yOffset += addText(contacts, pageWidth / 2, yOffset, { 
@@ -1541,46 +1322,49 @@
                     align: 'center'
                 });
                 
-                yOffset += 16;
-                doc.setDrawColor(67, 97, 238);
+                yOffset += 12;
+                doc.setDrawColor(0, 0, 0);
                 doc.setLineWidth(2);
                 doc.line(margin, yOffset, pageWidth - margin, yOffset);
-                yOffset += 16;
+                yOffset += 18;
 
                 // Summary
                 if (personal.summary) {
                     yOffset += addText('PROFESSIONAL SUMMARY', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
+                    yOffset += 2;
+                    doc.setLineWidth(1);
+                    doc.line(margin, yOffset, pageWidth - margin, yOffset);
+                    yOffset += 12;
                     yOffset += addText(personal.summary, margin, yOffset, { 
                         fontSize: 12,
                         maxWidth: pageWidth - 2 * margin
                     });
-                    yOffset += 16;
+                    yOffset += 18;
                 }
 
                 // Education
                 if (education.length) {
                     yOffset += addText('EDUCATION', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
                     doc.line(margin, yOffset, pageWidth - margin, yOffset);
                     yOffset += 12;
                     
                     education.forEach(edu => {
                         checkPageBreak(40);
-                        const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
                         yOffset += addText(`${edu.degree} - ${edu.institution}`, margin, yOffset, { 
                             fontSize: 14, 
                             style: 'bold'
                         });
-                        yOffset += addText(`${edu.startDate} - ${endDate}`, margin, yOffset, { 
-                            fontSize: 12,
-                            color: [102, 102, 102]
+                        const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
+                        yOffset += addText(`${edu.startDate} - ${endDate}`, pageWidth - margin, yOffset - 14, { 
+                            fontSize: 12, 
+                            style: 'italic',
+                            align: 'right'
                         });
                         yOffset += 10;
                     });
@@ -1591,8 +1375,7 @@
                 if (work.length) {
                     yOffset += addText('WORK EXPERIENCE', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
                     doc.line(margin, yOffset, pageWidth - margin, yOffset);
                     yOffset += 12;
@@ -1603,14 +1386,14 @@
                             fontSize: 14, 
                             style: 'bold'
                         });
-                        yOffset += addText(`${job.startDate} - ${job.endDate}`, margin, yOffset, { 
-                            fontSize: 12,
-                            color: [102, 102, 102]
+                        yOffset += addText(`${job.startDate} - ${job.endDate}`, pageWidth - margin, yOffset - 14, { 
+                            fontSize: 12, 
+                            style: 'italic',
+                            align: 'right'
                         });
                         if (job.description) {
                             yOffset += addText(job.description, margin, yOffset, { 
-                                fontSize: 12,
-                                color: [68, 68, 68]
+                                fontSize: 12
                             });
                         }
                         yOffset += 10;
@@ -1622,9 +1405,9 @@
                 if (skills.length) {
                     yOffset += addText('SKILLS', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
+                    yOffset += 2;
                     doc.line(margin, yOffset, pageWidth - margin, yOffset);
                     yOffset += 12;
                     
@@ -1639,8 +1422,7 @@
                 if (certifications.length) {
                     yOffset += addText('CERTIFICATIONS', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
                     doc.line(margin, yOffset, pageWidth - margin, yOffset);
                     yOffset += 12;
@@ -1660,8 +1442,7 @@
                 if (projects.length) {
                     yOffset += addText('PROJECTS', margin, yOffset, { 
                         fontSize: 16, 
-                        style: 'bold',
-                        color: [67, 97, 238]
+                        style: 'bold'
                     });
                     doc.line(margin, yOffset, pageWidth - margin, yOffset);
                     yOffset += 12;
@@ -1672,311 +1453,414 @@
                             fontSize: 14, 
                             style: 'bold'
                         });
+                        yOffset += 4;
                         if (proj.projectLink) {
                             yOffset += addText(proj.projectLink, margin, yOffset, { 
-                                fontSize: 12
+                                fontSize: 12,
+                                style: 'italic'
                             });
-                            yOffset += 6;
+                            yOffset += 4;
                         }
                         if (proj.projectDescription) {
                             yOffset += addText(proj.projectDescription, margin, yOffset, { 
-                                fontSize: 12,
-                                color: [68, 68, 68]
+                                fontSize: 12
                             });
                         }
                         yOffset += 10;
                     });
                 }
             }
-            // Creative Template
-            else if (selectedTemplate === 'creative') {
-    // Set A4 dimensions (595.28 x 841.89 points)
-    const pageWidth = 595.28;
-    const pageHeight = 841.89;
-    const margin = 40;
-    let yOffset = margin;
-    
-    // Enhanced page break check
-    const checkPageBreak = (spaceNeeded) => {
-        if (yOffset + spaceNeeded > pageHeight - margin) {
-            doc.addPage([pageWidth, pageHeight]);
-            yOffset = margin;
-            
-            // Re-add header if new page
-            doc.setFillColor(99, 102, 241);
-            doc.rect(0, 0, pageWidth, 100, 'F');
-        }
-    };
-    
-    // Set font
+
+
+// Modern Template
+else if (selectedTemplate === 'modern') {
     doc.setFont('helvetica', 'normal');
     
-    // Header with blue background
-    doc.setFillColor(99, 102, 241);
-    doc.rect(0, 0, pageWidth, 100, 'F');
-    
-    // Name
-    yOffset += addText(personal.name || 'Your Name', margin, yOffset, {
-        fontSize: 24,
-        style: 'bold',
-        fillColor: [255, 255, 255]
+    // Header
+    yOffset += addText(personal.name || 'Your Name', pageWidth / 2, yOffset, { 
+        fontSize: 20, 
+        align: 'center',
+        style: 'bold'
+    });
+    yOffset += addText(personal.title || 'Job Title', pageWidth / 2, yOffset, { 
+        fontSize: 14, 
+        align: 'center',
+        color: [102, 102, 102]
     });
     
-    // Title
-    yOffset += addText(personal.title || 'Job Title', margin, yOffset, {
-        fontSize: 16,
-        fillColor: [255, 255, 255],
-        opacity: 0.9
+    const contacts = [personal.email, personal.phone, personal.address, personal.link1, personal.link2]
+        .filter(Boolean).join(' | ');
+    yOffset += addText(contacts, pageWidth / 2, yOffset, { 
+        fontSize: 12, 
+        align: 'center'
     });
-    
-    yOffset += 12;
-    
-    // Improved Contact Info Section
-    const contacts = [
-        personal.email,
-        personal.phone,
-        personal.address,
-        personal.link1,
-        personal.link2
-    ].filter(Boolean);
-    
-    if (contacts.length > 0) {
-        checkPageBreak(30);
-        
-        let contactX = margin;
-        const lineHeight = 16;
-        const iconSpacing = 5;
-        
-        // Draw contact items with better spacing
-        contacts.forEach((contact, index) => {
-            const textWidth = doc.getStringUnitWidth(contact) * 12;
-            
-            // Check if we need to wrap to next line
-            if (contactX + textWidth > pageWidth - margin) {
-                contactX = margin;
-                yOffset += lineHeight;
-                checkPageBreak(lineHeight);
-            }
-            
-            // Add contact item
-            addText(contact, contactX, yOffset + lineHeight, {
-                fontSize: 12,
-                fillColor: [255, 255, 255]
-            });
-            
-            // Update X position with spacing
-            contactX += textWidth + (index < contacts.length - 1 ? 20 : 0);
-        });
-        
-        yOffset += lineHeight + 3; // Extra space after contacts
-    }
-    
-    // Summary Section
+    yOffset += 16;
+
+    // Summary
     if (personal.summary) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Professional Summary', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
-        });
-        
-        // Split summary into paragraphs if needed
-        const summaryLines = doc.splitTextToSize(personal.summary, pageWidth - 2 * margin);
-        yOffset += addText(summaryLines, margin, yOffset, {
-            fontSize: 12,
-            lineHeight: 1.2
-        });
-        
-        yOffset += 16;
-    }
+    yOffset += addText('PROFESSIONAL SUMMARY', margin, yOffset, { 
+        fontSize: 16, 
+        style: 'bold',
+        color: [67, 97, 238]
+    });
     
-    // Education Section
+   
+    
+    doc.setDrawColor(67, 97, 238);
+    doc.setLineWidth(2);
+    doc.line(margin, yOffset, pageWidth - margin, yOffset);
+    
+    yOffset += 16;
+    
+    yOffset += addText(personal.summary, margin, yOffset, { 
+        fontSize: 12,
+        maxWidth: pageWidth - 2 * margin
+    });
+    
+    yOffset += 16;
+}
+
+    // Education
     if (education.length) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Education', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
+        yOffset += addText('EDUCATION', margin, yOffset, { 
+            fontSize: 16, 
+            style: 'bold',
+            color: [67, 97, 238]
         });
-        yOffset += 4;
+        doc.line(margin, yOffset, pageWidth - margin, yOffset);
+        yOffset += 12;
         
         education.forEach(edu => {
-            checkPageBreak(60);
-            const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
-            
-            // Date range
-            yOffset += addText(`${edu.startDate} - ${endDate}`, margin, yOffset, {
+            checkPageBreak(40);
+            yOffset += addText(`${edu.degree} - ${edu.institution}`, margin, yOffset, { 
+                fontSize: 14, 
+                style: 'bold'
+            });
+            yOffset += 4;
+            yOffset += addText(`${edu.startDate} - ${edu.endDate}`, margin, yOffset, { 
                 fontSize: 12,
-                color: [99, 102, 241],
-                style: 'bold'
+                color: [102, 102, 102]
             });
-            yOffset += 2;
-            
-            // Degree
-            yOffset += addText(edu.degree, margin, yOffset, {
-                fontSize: 14,
-                style: 'bold'
-            });
-            yOffset += 2;
-            
-            // Institution
-            yOffset += addText(edu.institution, margin, yOffset, {
-                fontSize: 12
-            });
-            
-            yOffset += 12;
+            yOffset += 10;
         });
+        yOffset += 12;
     }
-    
-    // Work Experience Section
+
+    // Work Experience
     if (work.length) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Work Experience', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
+        yOffset += addText('WORK EXPERIENCE', margin, yOffset, { 
+            fontSize: 16, 
+            style: 'bold',
+            color: [67, 97, 238]
         });
-        yOffset += 4;
+        doc.line(margin, yOffset, pageWidth - margin, yOffset);
+        yOffset += 12;
         
         work.forEach(job => {
-            checkPageBreak(80);
-            
-            // Date range
-            yOffset += addText(`${job.startDate} - ${job.endDate}`, margin, yOffset, {
+            checkPageBreak(60);
+            yOffset += addText(`${job.position} - ${job.company}`, margin, yOffset, { 
+                fontSize: 14, 
+                style: 'bold'
+            });
+            yOffset += 4;
+            yOffset += addText(`${job.startDate} - ${job.endDate}`, margin, yOffset, { 
                 fontSize: 12,
-                color: [99, 102, 241],
-                style: 'bold'
+                color: [102, 102, 102]
             });
-            yOffset += 2;
-            
-            // Position
-            yOffset += addText(job.position, margin, yOffset, {
-                fontSize: 14,
-                style: 'bold'
-            });
-            
-            // Company
-            yOffset += addText(job.company, margin, yOffset, {
-                fontSize: 12,
-                color: [99, 102, 241],
-                style: 'bold'
-            });
-            yOffset += 2;
-            
-            // Description with proper line breaks
+            yOffset += 4;
             if (job.description) {
-                const descLines = doc.splitTextToSize(job.description, pageWidth - 2 * margin);
-                yOffset += addText(descLines, margin, yOffset, {
+                yOffset += addText(job.description, margin, yOffset, { 
                     fontSize: 12,
-                    color: [75, 85, 99],
-                    lineHeight: 1.2
+                    color: [68, 68, 68]
                 });
             }
-            
-            yOffset += 12;
+            yOffset += 10;
         });
+        yOffset += 12;
     }
-    
-    // Skills Section
+
+    // Skills
     if (skills.length) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Skills', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
+        yOffset += addText('SKILLS', margin, yOffset, { 
+            fontSize: 16, 
+            style: 'bold',
+            color: [67, 97, 238]
         });
+        doc.line(margin, yOffset, pageWidth - margin, yOffset);
+        yOffset += 12;
         
-        // Group skills into categories if needed
         const skillText = skills.map(s => s.skill).join(', ');
-        const skillLines = doc.splitTextToSize(skillText, pageWidth - 2 * margin);
-        
-        yOffset += addText(skillLines, margin, yOffset, {
-            fontSize: 12,
-            lineHeight: 1.2
+        yOffset += addText(skillText, margin, yOffset, { 
+            fontSize: 12
         });
-        
-        yOffset += 16;
+        yOffset += 12;
     }
-    
-    // Certifications Section
+    yOffset += 10;
+
+    // Certifications
     if (certifications.length) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Certifications', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
+        yOffset += addText('CERTIFICATIONS', margin, yOffset, { 
+            fontSize: 16, 
+            style: 'bold',
+            color: [67, 97, 238]
         });
-        yOffset += 4;
+        doc.line(margin, yOffset, pageWidth - margin, yOffset);
+        yOffset += 12;
         
         certifications.forEach(cert => {
-            checkPageBreak(40);
-            
-            // Certification name
-            yOffset += addText(cert.certification, margin, yOffset, {
-                fontSize: 14,
+            checkPageBreak(25);
+            yOffset += addText(`${cert.certification} - ${cert.issuer}`, margin, yOffset, { 
+                fontSize: 14, 
                 style: 'bold'
             });
-            
-            // Issuer
-            yOffset += addText(cert.issuer, margin, yOffset, {
-                fontSize: 12
+            yOffset += addText(cert.dateIssued, margin, yOffset, { 
+                fontSize: 12,
+                color: [102, 102, 102]
             });
-            
-            
-            // Date if available
-            if (cert.date) {
-                yOffset += addText(cert.date, margin, yOffset, {
-                    fontSize: 10,
-                    color: [99, 102, 241]
+            yOffset += 10;
+        });
+        yOffset += 12;
+    }
+
+    // Projects
+    if (projects.length) {
+        yOffset += addText('PROJECTS', margin, yOffset, { 
+            fontSize: 16, 
+            style: 'bold',
+            color: [67, 97, 238]
+        });
+        doc.line(margin, yOffset, pageWidth - margin, yOffset);
+        yOffset += 12;
+        
+        projects.forEach(proj => {
+            checkPageBreak(40);
+            yOffset += addText(proj.projectName, margin, yOffset, { 
+                fontSize: 14, 
+                style: 'bold'
+            });
+            yOffset += 4;
+            if (proj.projectLink) {
+                yOffset += addText(proj.projectLink, margin, yOffset, { 
+                    fontSize: 12
                 });
             }
-            
+            yOffset += 4;
+            if (proj.projectDescription) {
+                yOffset += addText(proj.projectDescription, margin, yOffset, { 
+                    fontSize: 12,
+                    color: [68, 68, 68]
+                });
+            }
             yOffset += 10;
         });
     }
-    
-    // Projects Section
-    if (projects.length) {
-        checkPageBreak(40);
-        
-        yOffset += addText('Projects', margin, yOffset, {
-            fontSize: 16,
-            style: 'bold'
-        });
-        yOffset += 4;
-        
-        projects.forEach(proj => {
-            checkPageBreak(60);
-            
-            // Project name
-            yOffset += addText(proj.projectName, margin, yOffset, {
-                fontSize: 14,
-                style: 'bold'
-            });
-            
-            // Project link
-            if (proj.projectLink) {
-                yOffset += addText(proj.projectLink, margin, yOffset, {
-                    fontSize: 12,
-                    color: [99, 102, 241]
-                });
-                yOffset += 6;
-            }
-            
-            // Project description
-            if (proj.projectDescription) {
-                const descLines = doc.splitTextToSize(proj.projectDescription, pageWidth - 2 * margin);
-                yOffset += addText(descLines, margin, yOffset, {
-                    fontSize: 12,
-                    color: [75, 85, 99],
-                    lineHeight: 1.2
-                });
-            }
-            
-            yOffset += 12;
-        });
-    }
 }
+
+else if (selectedTemplate === 'creative') {
+                doc.setFont('helvetica', 'normal');
+                
+                // Header
+                doc.setFillColor(99, 102, 241);
+                doc.rect(0, 0, pageWidth, 100, 'F');
+                
+                yOffset += addText(personal.name || 'Your Name', margin, yOffset, {
+                    fontSize: 24,
+                    style: 'bold',
+                    fillColor: [255, 255, 255]
+                });
+                
+                yOffset += addText(personal.title || 'Job Title', margin, yOffset, {
+                    fontSize: 16,
+                    fillColor: [255, 255, 255],
+                    opacity: 0.9
+                });
+                
+                yOffset += 12;
+                
+                // Contact Info
+                const contacts = [personal.email, personal.phone, personal.address, personal.link1, personal.link2]
+                    .filter(Boolean);
+                
+                let contactX = margin;
+                const contactSpacing = 20;
+                contacts.forEach(contact => {
+                    const textWidth = doc.getStringUnitWidth(contact) * 12;
+                    if (contactX + textWidth > pageWidth - margin) {
+        contactX = margin;
+        yOffset += 16;
+    }
+    
+    addText(contact, contactX, yOffset + 16, {
+        fontSize: 12,
+        fillColor: [255, 255, 255]
+    });
+
+    contactX += textWidth + contactSpacing;
+});
+
+                
+                yOffset += 16;
+                
+                // Summary
+                if (personal.summary) {
+                    yOffset += addText('Professional Summary', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    yOffset += addText(personal.summary, margin, yOffset, {
+                        fontSize: 12,
+                        maxWidth: pageWidth - 2 * margin
+                    });
+                    
+                    yOffset += 12;
+                }
+                
+                // Education
+                if (education.length) {
+                    yOffset += addText('Education', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    education.forEach(edu => {
+                        checkPageBreak(40);
+                        const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
+                        
+                        yOffset += addText(`${edu.startDate} - ${endDate}`, margin, yOffset, {
+                            fontSize: 12,
+                            color: [99, 102, 241],
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        yOffset += addText(edu.degree, margin, yOffset, {
+                            fontSize: 14,
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        yOffset += addText(edu.institution, margin, yOffset, {
+                            fontSize: 12
+                        });
+                        
+                        yOffset += 12;
+                    });
+                    
+                    yOffset += 12;
+                }
+                
+                // Work Experience
+                if (work.length) {
+                    yOffset += addText('Work Experience', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    work.forEach(job => {
+                        checkPageBreak(60);
+                        
+                        yOffset += addText(`${job.startDate} - ${job.endDate}`, margin, yOffset, {
+                            fontSize: 12,
+                            color: [99, 102, 241],
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        yOffset += addText(job.position, margin, yOffset, {
+                            fontSize: 14,
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        yOffset += addText(job.company, margin, yOffset, {
+                            fontSize: 12,
+                            color: [99, 102, 241],
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        if (job.description) {
+                            yOffset += addText(job.description, margin, yOffset, {
+                                fontSize: 12,
+                                color: [75, 85, 99]
+                            });
+                        }
+                        
+                        yOffset += 12;
+                    });
+                    
+                    yOffset += 12;
+                }
+                
+                // Skills
+                if (skills.length) {
+                    yOffset += addText('Skills', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    const skillText = skills.map(s => s.skill).join(', ');
+                    yOffset += addText(skillText, margin, yOffset, {
+                        fontSize: 12
+                    });
+                    
+                    yOffset += 16;
+                }
+                
+                // Certifications
+                if (certifications.length) {
+                    yOffset += addText('Certifications', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    certifications.forEach(cert => {
+                        checkPageBreak(40);
+                        
+                        yOffset += addText(cert.certification, margin, yOffset, {
+                            fontSize: 14,
+                            style: 'bold'
+                        });
+                        
+                        yOffset += addText(cert.issuer, margin, yOffset, {
+                            fontSize: 12
+                        });
+                        
+                        yOffset += 12;
+                    });
+                    
+                    yOffset += 12;
+                }
+                
+                // Projects
+                if (projects.length) {
+                    yOffset += addText('Projects', margin, yOffset, {
+                        fontSize: 16,
+                        style: 'bold'
+                    });
+                    yOffset += 4;
+                    projects.forEach(proj => {
+                        checkPageBreak(40);
+                        
+                        yOffset += addText(proj.projectName, margin, yOffset, {
+                            fontSize: 14,
+                            style: 'bold'
+                        });
+                        yOffset += 4;
+                        if (proj.projectLink) {
+                            yOffset += addText(proj.projectLink, margin, yOffset, {
+                                fontSize: 12
+                            });
+                            yOffset += 6;
+                        }
+                        yOffset += 4;
+                        if (proj.projectDescription) {
+                            yOffset += addText(proj.projectDescription, margin, yOffset, {
+                                fontSize: 12,
+                                color: [75, 85, 99]
+                            });
+                        }
+                        
+                        yOffset += 12;
+                    });
+                }
+            } 
             // Minimal Template
             else if (selectedTemplate === 'minimal') {
                 doc.setFont('helvetica', 'normal');
@@ -2148,14 +2032,13 @@
                             fontSize: 14,
                             style: 'bold'
                         });
-                        
+                        yOffset += 4;
                         if (proj.projectLink) {
                             yOffset += addText(proj.projectLink, margin, yOffset, {
                                 fontSize: 12
                             });
-                            yOffset += 6;
                         }
-                        
+                        yOffset += 4;
                         if (proj.projectDescription) {
                             yOffset += addText(proj.projectDescription, margin, yOffset, {
                                 fontSize: 12,
