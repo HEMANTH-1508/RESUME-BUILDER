@@ -252,17 +252,17 @@
             background-position: center;
         }
         .modern-preview {
-            background-image: url('https://images.pexels.com/photos/8867465/pexels-photo-8867465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-image: url('https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
             background-size: cover;
             background-position: center;
         }
         .creative-preview {
-            background-image: url('https://images.pexels.com/photos/8867392/pexels-photo-8867392.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-image: url('https://images.pexels.com/photos/1586996/pexels-photo-1586996.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
             background-size: cover;
             background-position: center;
         }
         .minimal-preview {
-            background-image: url('https://images.pexels.com/photos/8867477/pexels-photo-8867477.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-image: url('https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
             background-size: cover;
             background-position: center;
         }
@@ -1360,6 +1360,7 @@
                             fontSize: 14, 
                             style: 'bold'
                         });
+                        yOffset +=20;
                         const endDate = edu.currentlyStudying ? 'Present' : edu.endDate;
                         yOffset += addText(`${edu.startDate} - ${endDate}`, pageWidth - margin, yOffset - 14, { 
                             fontSize: 12, 
@@ -1923,7 +1924,7 @@ else if (selectedTemplate === 'creative') {
                             fontSize: 14,
                             style: 'bold'
                         });
-                        
+                        yOffset +=20;
                         yOffset += addText(`${edu.startDate} - ${endDate}`, pageWidth - margin, yOffset - 14, {
                             fontSize: 12,
                             color: [153, 153, 153],
